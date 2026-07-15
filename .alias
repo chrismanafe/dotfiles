@@ -1,0 +1,56 @@
+# Shared shell aliases, symlinked to ~/.alias by chrismanafe/mac-setup
+# (geerlingguy.dotfiles role) and sourced from ~/.zshrc.
+
+# git
+alias gp='git pull'
+alias gc='git clone'
+# recursively git pull sub-directories
+alias gpa='find . -name .git -print -execdir git pull \;'
+alias gs='git status'
+
+# tools
+alias d='docker'
+alias jn='jupyter notebook'
+alias jl='jupyter lab'
+alias tf='terraform'
+alias k='kubectl'
+alias cc='claude'
+
+# re-run this machine's setup playbook
+mac-setup-apply() {
+  (cd ~/Projects/mac-setup && ansible-playbook main.yml --ask-become-pass "$@")
+}
+alias mac-setup-plan='code ~/Projects/mac-setup'
+
+src() {
+  if [ -n "$BASH_VERSION" ]; then
+    source ~/.bashrc
+  elif [ -n "$ZSH_VERSION" ]; then
+    source ~/.zshrc
+  else
+    echo "Unsupported shell"
+  fi
+}
+
+# prefer modern tools if installed
+if command -v nvim >/dev/null 2>&1; then
+  alias vi='nvim'
+fi
+
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat'
+elif command -v batcat >/dev/null 2>&1; then
+  alias cat='batcat'
+fi
+
+function c() {
+    code ~/code/"$1"
+}
+
+_c_complete() {
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local dirs
+    dirs=$(find ~/code -maxdepth 1 -mindepth 1 -type d -exec basename {} \; 2>/dev/null)
+    COMPREPLY=( $(compgen -W "${dirs}" -- "$cur") )
+}
+complete -o nospace -F _c_complete c
